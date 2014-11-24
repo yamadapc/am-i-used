@@ -1,0 +1,30 @@
+{
+  "name": "am-i-used",
+  "bin": "index.js",
+  "version": "0.0.1",
+  "description": "Checks the NPM API for the download counts for each of your projects in the last month and displays them.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/yamadapc/am-i-used"
+  },
+  "keywords": [
+    "fun",
+    "toy",
+    "npm",
+    "open",
+    "source"
+  ],
+  "author": "Pedro Tacla Yamada",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yamadapc/am-i-used/issues"
+  },
+  "homepage": "https://github.com/yamadapc/am-i-used",
+  "dependencies": {
+    "cheerio": "^0.18.0",
+    "superagent": "^0.21.0"
+  }
+}
