@@ -5,6 +5,8 @@ incomplete code), which scrapes the NPM website for an author's packages and
 then queries the NPM API to check the number of downloads each of the packages
 had last month.
 
+![am-i-used-demo](/am-i-used-demo.gif)
+
 License
 =======
 This code is licensed under the "DO WHAT THE FUCK YOU WANT TO" license, so...
