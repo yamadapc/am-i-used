@@ -5,7 +5,7 @@ var cheerio = require('cheerio');
 var request = require('superagent');
 
 var args = process.argv.slice(process.argv[0] === 'node' ? 2 : 1);
-main(args);
+if(!module.parent) main(args);
 
 function main(args) {
   if(args.indexOf('-h') !== -1 || args.indexOf('--help') !== -1) {
@@ -53,6 +53,7 @@ function main(args) {
     });
   }
 }
+exports.main = main;
 
 function getPackageDownloads(packagename, cb) {
   request
@@ -62,6 +63,7 @@ function getPackageDownloads(packagename, cb) {
       else cb(null, JSON.parse(res.text).downloads);
     });
 }
+exports.getPackageDownloads = getPackageDownloads;
 
 function getCurrentNpmUser(cb) {
   child.exec('npm whoami', [], function(err, stdout/*, stderr*/) {
@@ -69,6 +71,7 @@ function getCurrentNpmUser(cb) {
     else cb(null, stdout.toString().slice(0, -1));
   });
 }
+exports.getCurrentNpmUser = getCurrentNpmUser;
 
 function getPackagesFromNpm(username, cb) {
   // Doesn't handle pagination
@@ -82,14 +85,20 @@ function getPackagesFromNpm(username, cb) {
       cb(null, packagenames);
     });
 }
+exports.getPackagesFromNpm = getPackagesFromNpm;
 
 function getPackagesFromHtml($) {
-  return $('div#package .row p a')
+  return $('div#profile ul li a')
     .map(function(i, el) {
-      return $(el).html();
+      var m = /package\/(.+)/.exec($(el).attr('href'));
+      return m && m[1];
+    })
+    .filter(function(i, el) {
+      return !!el;
     })
     .get();
 }
+exports.getPackagesFromHtml = getPackagesFromHtml;
 
 function eachSeries(arr, fn, cb) {
   var counter = 0;
@@ -115,6 +124,7 @@ function eachSeries(arr, fn, cb) {
     }
   }
 }
+exports.eachSeries = eachSeries;
 
 function mapAsync(arr, fn, cb) {
   var counter = 1;
@@ -143,6 +153,7 @@ function mapAsync(arr, fn, cb) {
     }
   }
 }
+exports.mapAsync = mapAsync;
 
 function exit(err) {
   if(err) {
@@ -153,3 +164,4 @@ function exit(err) {
     process.exit(0);
   }
 }
+exports.exit = exit;
