@@ -1,7 +1,7 @@
 {
   "name": "am-i-used",
   "bin": "index.js",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Checks the NPM API for the download counts for each of your projects in the last month and displays them.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
