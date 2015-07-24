@@ -88,7 +88,7 @@ function getPackagesFromNpm(username, cb) {
 exports.getPackagesFromNpm = getPackagesFromNpm;
 
 function getPackagesFromHtml($) {
-  return $('div#profile ul li a')
+  return $('ul.collaborated-packages li a')
     .map(function(i, el) {
       var m = /package\/(.+)/.exec($(el).attr('href'));
       return m && m[1];
