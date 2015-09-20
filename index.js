@@ -60,7 +60,7 @@ function getPackageDownloads(packagename, cb) {
     .get('https://api.npmjs.org/downloads/point/last-month/' + packagename)
     .end(function(err, res) {
       if(err) cb(err);
-      else cb(null, JSON.parse(res.text).downloads);
+      else cb(null, JSON.parse(res.text).downloads || 0);
     });
 }
 exports.getPackageDownloads = getPackageDownloads;
