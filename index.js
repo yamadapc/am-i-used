@@ -1,10 +1,15 @@
 #!/usr/bin/env node
 'use strict';
 var child = require('child_process');
+var path = require('path');
 var cheerio = require('cheerio');
 var request = require('superagent');
 
-var args = process.argv.slice(process.argv[0] === 'node' ? 2 : 1);
+var args = process.argv.slice(
+  ['node', 'nodejs', 'jx', 'iojs'].indexOf(
+    path.basename(process.argv[0])
+  ) !== -1 ? 2 : 1
+);
 if(!module.parent) main(args);
 
 function main(args) {
