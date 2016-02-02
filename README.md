@@ -11,3 +11,6 @@ License
 =======
 This code is licensed under the "DO WHAT THE FUCK YOU WANT TO" license, so...
 yeah.
+
+## Donations
+Would you like to buy me a beer? Send bitcoin to 3JjxJydvoJjTrhLL86LGMc8cNB16pTAF3y
