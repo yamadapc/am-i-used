@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/yamadapc/am-i-used",
   "dependencies": {
-    "cheerio": "^0.18.0",
+    "cheerio": "^0.20.0",
     "superagent": "^0.21.0"
   }
 }
