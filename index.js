@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 'use strict';
+var async = require('async');
 var child = require('child_process');
 var path = require('path');
-var cheerio = require('cheerio');
 var request = require('superagent');
 
 var args = process.argv.slice(
@@ -11,6 +11,10 @@ var args = process.argv.slice(
   ) !== -1 ? 2 : 1
 );
 if(!module.parent) main(args);
+
+function commaNum(n) {
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
 
 function main(args) {
   if(args.indexOf('-h') !== -1 || args.indexOf('--help') !== -1) {
@@ -42,7 +46,7 @@ function main(args) {
         var total = ds.reduce(function(x, m) { return x + m; }, 0);
 
         console.log(
-          'Your packages have been downloaded ' + total + ' times last month.'
+          'Your packages have been downloaded ' + commaNum(total) + ' times last month.'
         );
 
         console.log(
@@ -50,7 +54,7 @@ function main(args) {
         );
 
         for(var i = 0, len = ds.length; i < len; i++) {
-          console.log(packagenames[i] + ' - ' + ds[i]);
+          console.log(packagenames[i] + ' - ' + commaNum(ds[i]));
         }
 
         cb();
@@ -79,31 +83,30 @@ function getCurrentNpmUser(cb) {
 exports.getCurrentNpmUser = getCurrentNpmUser;
 
 function getPackagesFromNpm(username, cb) {
-  // Doesn't handle pagination
-  request
-    .get('https://npmjs.org/browse/author/' + username)
-    .end(function(err, res) {
-      if(err) return cb(err);
-
-      var $ = cheerio.load(res.text);
-      var packagenames = getPackagesFromHtml($);
-      cb(null, packagenames);
+  var hasMore = true;
+  var offset = 0;
+  var packages = [];
+  async.whilst(
+    function () {
+      return hasMore;
+    },
+    function (cb) {
+      request
+        .get('https://www.npmjs.com/profile/' + username + '/packages?offset=' + offset++)
+        .end(function (err, res) {
+          if (err) return cb(err);
+          var result = JSON.parse(res.text);
+          hasMore = result.hasMore;
+          packages.push(result.items.map(function (item) { return item.name }));
+          cb(null);
+        });
+    },
+    function (err) {
+      if (err) return cb(err);
+      cb(null, [].concat.apply([], packages));
     });
 }
 exports.getPackagesFromNpm = getPackagesFromNpm;
-
-function getPackagesFromHtml($) {
-  return $('ul.collaborated-packages li a')
-    .map(function(i, el) {
-      var m = /package\/(.+)/.exec($(el).attr('href'));
-      return m && m[1];
-    })
-    .filter(function(i, el) {
-      return !!el;
-    })
-    .get();
-}
-exports.getPackagesFromHtml = getPackagesFromHtml;
 
 function eachSeries(arr, fn, cb) {
   var counter = 0;
