@@ -12,6 +12,10 @@ var args = process.argv.slice(
 );
 if(!module.parent) main(args);
 
+function commaNum(n) {
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 function main(args) {
   if(args.indexOf('-h') !== -1 || args.indexOf('--help') !== -1) {
     console.log('Usage: am-i-used');
@@ -42,7 +46,7 @@ function main(args) {
         var total = ds.reduce(function(x, m) { return x + m; }, 0);
 
         console.log(
-          'Your packages have been downloaded ' + total + ' times last month.'
+          'Your packages have been downloaded ' + commaNum(total) + ' times last month.'
         );
 
         console.log(
@@ -50,7 +54,7 @@ function main(args) {
         );
 
         for(var i = 0, len = ds.length; i < len; i++) {
-          console.log(packagenames[i] + ' - ' + ds[i]);
+          console.log(packagenames[i] + ' - ' + commaNum(ds[i]));
         }
 
         cb();
