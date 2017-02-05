@@ -98,8 +98,9 @@ function getPackagesFromNpm(username, cb) {
   getPackageCountFromNpm(username, function (err, total, itemCount) {
     if (err) return cb(err);
     var totalOffsets = Math.ceil(total / 100);
-    async.times(
+    async.timesLimit(
       totalOffsets,
+      2, // let's be nice to NPM.
       function (i, cb) {
         request
           .get('https://www.npmjs.com/profile/' + username + '/packages?offset=' + i)
