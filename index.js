@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 'use strict';
+var async = require('async');
 var child = require('child_process');
 var path = require('path');
-var cheerio = require('cheerio');
 var request = require('superagent');
 
 var args = process.argv.slice(
@@ -78,32 +78,39 @@ function getCurrentNpmUser(cb) {
 }
 exports.getCurrentNpmUser = getCurrentNpmUser;
 
-function getPackagesFromNpm(username, cb) {
-  // Doesn't handle pagination
+function getPackageCountFromNpm(username, cb) {
+  // we use a really high offset here to avoid making NPM send us the first batch while still getting the
+  // total number of packages.
   request
-    .get('https://npmjs.org/browse/author/' + username)
+    .get('https://www.npmjs.com/profile/' + username + '/packages?offset=1000000')
     .end(function(err, res) {
       if(err) return cb(err);
-
-      var $ = cheerio.load(res.text);
-      var packagenames = getPackagesFromHtml($);
-      cb(null, packagenames);
+      cb(null, JSON.parse(res.text).count);
     });
 }
-exports.getPackagesFromNpm = getPackagesFromNpm;
+exports.getPackageCountFromNpm = getPackageCountFromNpm;
 
-function getPackagesFromHtml($) {
-  return $('ul.collaborated-packages li a')
-    .map(function(i, el) {
-      var m = /package\/(.+)/.exec($(el).attr('href'));
-      return m && m[1];
-    })
-    .filter(function(i, el) {
-      return !!el;
-    })
-    .get();
+function getPackagesFromNpm(username, cb) {
+  getPackageCountFromNpm(username, function (err, total, itemCount) {
+    if (err) return cb(err);
+    var totalOffsets = Math.ceil(total / 100);
+    async.times(
+      totalOffsets,
+      function (i, cb) {
+        request
+          .get('https://www.npmjs.com/profile/' + username + '/packages?offset=' + i)
+          .end(function (err, res) {
+            if (err) return cb(err);
+            cb(null, JSON.parse(res.text).items.map(function (item) { return item.name }));
+          });
+      },
+      function (err, results) {
+        if (err) return cb(err);
+        cb(null, [].concat.apply([], results));
+      });
+  });
 }
-exports.getPackagesFromHtml = getPackagesFromHtml;
+exports.getPackagesFromNpm = getPackagesFromNpm;
 
 function eachSeries(arr, fn, cb) {
   var counter = 0;
