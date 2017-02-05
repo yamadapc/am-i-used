@@ -82,38 +82,29 @@ function getCurrentNpmUser(cb) {
 }
 exports.getCurrentNpmUser = getCurrentNpmUser;
 
-function getPackageCountFromNpm(username, cb) {
-  // we use a really high offset here to avoid making NPM send us the first batch while still getting the
-  // total number of packages.
-  request
-    .get('https://www.npmjs.com/profile/' + username + '/packages?offset=1000000')
-    .end(function(err, res) {
-      if(err) return cb(err);
-      cb(null, JSON.parse(res.text).count);
-    });
-}
-exports.getPackageCountFromNpm = getPackageCountFromNpm;
-
 function getPackagesFromNpm(username, cb) {
-  getPackageCountFromNpm(username, function (err, total, itemCount) {
-    if (err) return cb(err);
-    var totalOffsets = Math.ceil(total / 100);
-    async.timesLimit(
-      totalOffsets,
-      2, // let's be nice to NPM.
-      function (i, cb) {
-        request
-          .get('https://www.npmjs.com/profile/' + username + '/packages?offset=' + i)
-          .end(function (err, res) {
-            if (err) return cb(err);
-            cb(null, JSON.parse(res.text).items.map(function (item) { return item.name }));
-          });
-      },
-      function (err, results) {
-        if (err) return cb(err);
-        cb(null, [].concat.apply([], results));
-      });
-  });
+  var hasMore = true;
+  var offset = 0;
+  var packages = [];
+  async.whilst(
+    function () {
+      return hasMore;
+    },
+    function (cb) {
+      request
+        .get('https://www.npmjs.com/profile/' + username + '/packages?offset=' + offset++)
+        .end(function (err, res) {
+          if (err) return cb(err);
+          var result = JSON.parse(res.text);
+          hasMore = result.hasMore;
+          packages.push(result.items.map(function (item) { return item.name }));
+          cb(null);
+        });
+    },
+    function (err) {
+      if (err) return cb(err);
+      cb(null, [].concat.apply([], packages));
+    });
 }
 exports.getPackagesFromNpm = getPackagesFromNpm;
 
